@@ -1,0 +1,6 @@
+@WackysentenceAPI_HostAddress = http://localhost:5152
+
+GET {{WackysentenceAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
