@@ -16,6 +16,9 @@ public class Program
         builder.Services.AddOpenApi();
 
         builder.Services.AddSingleton<GeneratorService>();
+        builder.Services.AddSingleton<DataLoader>(); //we need to add the DataLoader as a singleton service so that it can be injected into the GeneratorService
+        //  and we can use the same instance of the DataLoader throughout the application, this way we can avoid reading the files multiple times
+        //  and we can also avoid having multiple instances of the DataLoader with different data in them
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnet/core/swashbuckle

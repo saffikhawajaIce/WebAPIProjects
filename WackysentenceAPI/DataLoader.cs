@@ -12,7 +12,7 @@ namespace WackysentenceAPI.Services
     {
         //this class is responsible for loading the data from the txt file and storing it in a multi-dimensional array
 
-        public List<string>[] multiDimensionalArray = new List<string>[8]; //we have 8 categories of words, so we need an array of 8 lists to store them
+        public List<string>[] multiDimensionalArray = new List<string>[10]; //we have 9 categories of words, so we need an array of 9 lists to store them
 
         public DataLoader()
         {
@@ -69,15 +69,16 @@ namespace WackysentenceAPI.Services
                         case "Consequences":
                             multiDimensionalArray[7].Add(line);
                             break;
+                        case "People":
+                            multiDimensionalArray[8].Add(line);
+                            break;
+                        default:
+                            // Handle unknown category if necessary
+                            break;
                     }
                 }
             }
         }
-
-
-
-
-
 
     }
 }

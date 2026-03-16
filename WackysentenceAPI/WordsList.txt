@@ -1,4 +1,4 @@
-#nouns
+#Nouns
 banana
 toaster
 raccoon
@@ -11,8 +11,28 @@ chair
 bald man
 couch
 air freshener
+toaster
+microwave
+keyboard
+sandwich
+potato
+spreadsheet
+umbrella
+traffic cone
+rubber duck
+office chair
+suspicious banana
+laptop charger
+whiteboard marker
+coffee mug
+broken printer
+ancient scroll
+mysterious button
+expired yogurt
+government document
+USB stick
 
-#adjectives
+#Adjectives
 unhinged
 suspicious
 crunchy
@@ -21,8 +41,27 @@ radioactive
 emotionally unstable
 majestic (but in a weird way)
 illegally loud
+ancient
+suspicious
+confused
+chaotic
+emotional
+glorious
+cursed
+questionable
+mysterious
+dramatic
+aggressive
+sleepy
+unstable
+overqualified
+underpaid
+legendary
+illegal
+heroic
+awkward
 
-#verbs
+#Verbs
 screaming
 yeeting
 wobbling
@@ -32,9 +71,26 @@ malfunctioning
 aggressively blinking
 speed-running
 existing incorrectly
-vibing
+vibinginvestigates
+summoning
+debugging
+destroying
+launching
+questioning
+worshipping
+inspecting
+negotiating with
+accidentally inventing
+secretly controlling
+emotionally supporting
+aggressively auditting
+philosophically debating
+confiscating
+documenting
+dramatically revealing
+teleporting
 
-#adverbs
+#Adverbs
 loudly
 while crying
 with no pants on
@@ -43,8 +99,20 @@ for 12 hours straight
 while sleep-deprived
 while being chased by a bear
 while having an existential crisis
+aggressively
+suspiciously
+dramatically
+secretly
+emotionally
+accidentally
+confidently
+awkwardly
+unexpectedly
+heroically
+loudly
+silently
 
-#places
+#Places
 the Walmart parking lot
 the alien cafeteria
 my grandma's basement
@@ -54,7 +122,7 @@ the cursed website
 production (somehow)
 the comments section
 
-#phrases
+#Phrases
 for absolutely no reason
 and nobody questioned it
 like it was totally normal
@@ -63,7 +131,7 @@ and that's when things got worse
 in front of everyone
 and I regret everything
 
-#emotions
+#Emotions
 with full confidence
 out of pure panic
 for emotional support
@@ -73,7 +141,7 @@ completely unprepared
 fueled by caffeine
 against my better judgment
 
-#consequences
+#Consequences
 and now I'm banned
 and the app crashed
 and production went down
@@ -83,3 +151,20 @@ and I will not be explaining
 and this is why we have meetings
 and that was my last day
 and the bug report wrote itself
+
+#People
+wizard
+intern
+manager
+accountant
+programmer
+janitor
+scientist
+conspiracy theorist
+philosopher
+barista
+robot
+alien
+time traveler
+librarian
+pirate

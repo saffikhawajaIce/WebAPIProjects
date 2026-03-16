@@ -1,21 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.IO;
+
 namespace WackysentenceAPI.Services
-
 {
-    using System.ComponentModel;
-    using System.IO;
-    using System.Text.Json;
-
     public class GeneratorService
     {
-
-        public GeneratorService(dataLoader dataLoader)
+        DataLoader dataLoader;
+        public GeneratorService(DataLoader dataLoader)
         {
-            dataLoader = new DataLoader();
-            dataLoader.readfiles();
+            this.dataLoader = dataLoader;
+            this.dataLoader.readfiles(); //we need to call the readfiles method to load the data from the txt file into the multi-dimensional array
+            List<string>[] multiDimensionalArray = new List<string>[10]; //we have 9 categories of words, so we need an array of 9 lists to store them
         }
+
         public List<string> storiescache = new List<string>(); //this will store the generated stories for users to view their past stories
         Random random = new Random();
 
@@ -29,7 +29,7 @@ namespace WackysentenceAPI.Services
         //maybe i can store the templates in a separate file and read them in like i do with the words, this way i can easily add more templates without having to update the code
         string[] templates = File.ReadAllLines("Templates.txt").Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
 
-        public string Template()
+        public string FillTemplate(List<string>[] multiDimensionalArray)
         {
             random = new Random();
             string template = templates[random.Next(0, templates.Length)];
@@ -46,7 +46,7 @@ namespace WackysentenceAPI.Services
         public string GenerateStory()
         {
             //return strcuted data instead of a string with the generated story, the template used, and the word count of the story
-            string story = Template();
+            string story = FillTemplate(dataLoader.multiDimensionalArray);
             int templateNumber = Array.IndexOf(templates, story) + 1; //get the index of the template used and add 1 to it to get the template number (since the index starts at 0)
             var response = new
             {
@@ -67,7 +67,7 @@ namespace WackysentenceAPI.Services
         public void AskAgain()
         {
             Console.Write("Press ENTER to generate another cursed story (or type q to quit): ");
-            string input = Console.ReadLine();
+            string input = Console.ReadLine() ?? "";
             if (input.ToLower() == "q")
             {
                 return;
