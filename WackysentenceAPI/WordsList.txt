@@ -1,0 +1,85 @@
+#nouns
+banana
+toaster
+raccoon
+spaceship
+sock
+ball
+book
+foot
+chair
+bald man
+couch
+air freshener
+
+#adjectives
+unhinged
+suspicious
+crunchy
+majestic
+radioactive
+emotionally unstable
+majestic (but in a weird way)
+illegally loud
+
+#verbs
+screaming
+yeeting
+wobbling
+sneezing
+moonwalking
+malfunctioning
+aggressively blinking
+speed-running
+existing incorrectly
+vibing
+
+#adverbs
+loudly
+while crying
+with no pants on
+in the middle of the night
+for 12 hours straight
+while sleep-deprived
+while being chased by a bear
+while having an existential crisis
+
+#places
+the Walmart parking lot
+the alien cafeteria
+my grandma's basement
+the group chat
+the underground lab
+the cursed website
+production (somehow)
+the comments section
+
+#phrases
+for absolutely no reason
+and nobody questioned it
+like it was totally normal
+as the prophecy foretold
+and that's when things got worse
+in front of everyone
+and I regret everything
+
+#emotions
+with full confidence
+out of pure panic
+for emotional support
+like I knew what I was doing
+with unnecessary intensity
+completely unprepared
+fueled by caffeine
+against my better judgment
+
+#consequences
+and now I'm banned
+and the app crashed
+and production went down
+and HR was notified
+and nobody knows why
+and I will not be explaining
+and this is why we have meetings
+and that was my last day
+and the bug report wrote itself

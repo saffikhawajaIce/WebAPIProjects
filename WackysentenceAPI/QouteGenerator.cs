@@ -2,42 +2,68 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 namespace WackysentenceAPI.Services
+
 {
+    using System.ComponentModel;
+    using System.IO;
+    using System.Text.Json;
 
     public class GeneratorService
     {
-        string[][] multiDimensionalArray = new string[][]
-       {
-        new string[] { "banana", "toaster", "raccoon", "spaceship", "sock", "ball", "book", "foot", "chair", "bald man", "couch", "air freshner" },
-        new string[] { "unhinged", "suspicious", "crunchy", "majestic", "radioactive", "emotionally unstable", "majestic (but in a weird way)", "illegally loud" },
-        new string[] { "screaming", "yeeting", "wobbling", "sneezing", "moonwalking", "malfunctioning", "aggressively blinking", "speed-running", "existing incorrectly", "vibing" },
-        new string[] { "the Walmart parking lot", "the alien cafeteria", "my grandma's basement", "the group chat", "the underground lab", "the cursed website", "production (somehow)", "the comments section" },
-        new string[] { "for absolutely no reason", "and nobody questioned it", "like it was totally normal", "as the prophecy foretold", "and that's when things got worse", "in front of everyone", "and I regret everything" },
-        new string[] { "with full confidence", "out of pure panic", "for emotional support", "like I knew what I was doing", "with unnecessary intensity", "completely unprepared", "fueled by caffeine", "against my better judgment" },
-        new string[] { "and now I'm banned", "and the app crashed", "and production went down", "and HR was notified", "and nobody knows why", "and I will not be explaining", "and this is why we have meetings", "and that was my last day", "and the bug report wrote itself" }
-       };
 
+        public GeneratorService(dataLoader dataLoader)
+        {
+            dataLoader = new DataLoader();
+            dataLoader.readfiles();
+        }
+        public List<string> storiescache = new List<string>(); //this will store the generated stories for users to view their past stories
         Random random = new Random();
 
-        string Pick(string[] array)
+
+        //this method will pick a random word from the given category and return it, this is used in the Template method to replace the placeholders in the template with random words from the corresponding categories
+        public string Pick(List<string> category)
         {
-            return array[(int)Math.Floor(random.NextDouble() * array.Length)];
+            return category[random.Next(category.Count)];
         }
+
+        //maybe i can store the templates in a separate file and read them in like i do with the words, this way i can easily add more templates without having to update the code
+        string[] templates = File.ReadAllLines("Templates.txt").Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
+
+        public string Template()
+        {
+            random = new Random();
+            string template = templates[random.Next(0, templates.Length)];
+
+            for (int i = 0; i < multiDimensionalArray.Length; i++)
+            {
+                template = template.Replace($"{{{i}}}", Pick(multiDimensionalArray[i]));
+            }
+
+            return template;
+        }
+
 
         public string GenerateStory()
         {
-            string myNoun = Pick(multiDimensionalArray[0]);
-            string myAdjective = Pick(multiDimensionalArray[1]);
-            string myVerb = Pick(multiDimensionalArray[2]);
-            string myPlaces = Pick(multiDimensionalArray[3]);
-            string myFunnyPhrases = Pick(multiDimensionalArray[4]);
-            string myEmotions = Pick(multiDimensionalArray[5]);
-            string myConsequences = Pick(multiDimensionalArray[6]);
+            //return strcuted data instead of a string with the generated story, the template used, and the word count of the story
+            string story = Template();
+            int templateNumber = Array.IndexOf(templates, story) + 1; //get the index of the template used and add 1 to it to get the template number (since the index starts at 0)
+            var response = new
+            {
+                Story = story,
+                Template = $"Template {templateNumber}",
+                WordCount = story.Split(' ').Length
+            };
 
-            string story = $"my {myNoun} felt {myAdjective} so I started {myVerb} {myEmotions} at {myPlaces} {myFunnyPhrases} {myConsequences}";
-            return story;
+            //adding story to the cache, for users to view their past stories
+            storiescache.Add(story);
+
+            //serialize the response object to json and return it
+            return JsonSerializer.Serialize(response);
         }
 
+
+        //this method will ask the user if they want to generate another story, if they do, it will call the GenerateStory method again, if they don't, it will return
         public void AskAgain()
         {
             Console.Write("Press ENTER to generate another cursed story (or type q to quit): ");
@@ -52,5 +78,28 @@ namespace WackysentenceAPI.Services
                 AskAgain();
             }
         }
+
+
+        //this method will generate multiple stories at once, it will take in the number of stories to generate as a parameter and return a list of generated stories, 
+        //it will also add the generated stories to the cache for users to view their past storiess
+        public string GenerateMultipleStories(int numberOfStories)
+        {
+            System.Console.WriteLine("Generating multiple stories...");
+            var stories = new List<string>();
+            for (int i = 0; i < numberOfStories; i++)
+            {
+                stories.Add(GenerateStory());
+                System.Console.WriteLine($"Story {i + 1} generated.");
+            }
+
+            storiescache.AddRange(stories); //add the generated stories to the cache
+            return JsonSerializer.Serialize(stories);
+        }
+
+
+        //implement filtering options for the user to choose from (e.g. only generate stories about animals, 
+        //add a feature to allow users to input their own words to be included in the generation process
+        //add a feature to allow users to save their favorite generated stories
+
     }
 }

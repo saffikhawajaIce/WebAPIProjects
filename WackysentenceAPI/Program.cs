@@ -27,8 +27,18 @@ public class Program
         //now i need to add a get endpoint that will call the GenerateStory method from the GeneratorService class and return the generated story as a string
         app.MapGet("/generate", (GeneratorService generator) =>
         {
+
+            //i want a structured json response that includes the generated story, the template used, and the word count of the story
             string story = generator.GenerateStory();
-            return story;
+            var response = new
+            {
+                Story = story,
+                Template = "default",
+                WordCount = story.Split(' ').Length
+            };
+
+            return response;
+
         });
 
         app.UseSwagger();
