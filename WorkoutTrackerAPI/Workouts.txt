@@ -1,3 +1,4 @@
-Bench Press,4,10,2026-03-17
-Squat,3,8,2024-01-15
-Deadlift,5,5,17/03/2026
+#Workouts
+1,Bench Press,4,10,2026-03-17
+2,Squat,3,8,2024-01-15
+3,Deadlift,5,5,2026-03-17

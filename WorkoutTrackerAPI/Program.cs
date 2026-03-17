@@ -21,10 +21,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-//lets create a dummy example workout to test our get endpoint
-var workoutManager = app.Services.GetRequiredService<WorkoutManagerService>();
-var exampleWorkout = new Workout("Push-ups", 3, 10);
-workoutManager.AddWorkout(exampleWorkout);
+
+//i want a get endpoint that will return a specific workout
+app.MapGet("/workouts/{id}", (WorkoutManagerService service, int id) => service.GetWorkout(id));
 
 //i want a get endpoint that will return a list of workouts
 app.MapGet("/workouts", (WorkoutManagerService service) => service.GetWorkouts());
@@ -54,5 +53,7 @@ app.UseHttpsRedirection();
 
 
 app.Run();
+
+
 
 
