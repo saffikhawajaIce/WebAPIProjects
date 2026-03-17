@@ -26,7 +26,7 @@ var workoutManager = app.Services.GetRequiredService<WorkoutManagerService>();
 var exampleWorkout = new Workout("Push-ups", 3, 10);
 workoutManager.AddWorkout(exampleWorkout);
 
-//i wanna make a get endpoint that will return a list of workouts
+//i want a get endpoint that will return a list of workouts
 app.MapGet("/workouts", (WorkoutManagerService service) => service.GetWorkouts());
 
 //i want a post endpoint that will add a new workout to the list of workouts

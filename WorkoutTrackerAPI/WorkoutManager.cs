@@ -31,8 +31,7 @@ public class WorkoutManagerService
         {
             workout.ExerciseName = updatedWorkout.ExerciseName;
             workout.Sets = updatedWorkout.Sets;
-            workout.Exercises = updatedWorkout.Exercises;
-            workout.reps = updatedWorkout.reps;
+            workout.Reps = updatedWorkout.Reps;
             workout.Date = updatedWorkout.Date;
         }
     }

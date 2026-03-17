@@ -5,15 +5,14 @@ public class Workout
     public int Id { get; set; }
     public string ExerciseName { get; set; }
     public int Sets { get; set; }
-    public int Exercises { get; set; }
-    public int reps { get; set; }
+    public int Reps { get; set; }
     public DateTime Date { get; set; }
 
-    public Workout(string exerciseName, int sets, int exercises)
+    public Workout(string exerciseName, int sets, int reps)
     {
-        ExerciseName = exerciseName;
-        Sets = sets;
-        Exercises = exercises;
+        this.ExerciseName = exerciseName;
+        this.Sets = sets;
+        this.Reps = reps;
     }
 
 }
