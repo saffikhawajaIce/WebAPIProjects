@@ -54,7 +54,6 @@ public class workoutdatamanager
                 }
             }
         }
-
     }
 
     public void SaveData(WorkoutManagerService workoutManagerService)
