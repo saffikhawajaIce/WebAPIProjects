@@ -8,11 +8,50 @@ namespace URLshortnerAPI;
 
 public class FileReaderService
 {
+    //this readonly string variable is going to store the path of the file that will be used to store the url database,
+    // it will be used by the ReadFile and WriteToFile methods to read and write the url database to a txt file called "urlDatabase.txt".
     private readonly string path = "urlDatabase.txt";
 
-    public FileReaderService()
-    {
+    private readonly URLShortnerService urlShortnerService;
 
+    public FileReaderService(URLShortnerService urlShortnerService)
+    {
+        this.urlShortnerService = urlShortnerService;
+        {
+
+            //when the application starts, it will read the url database from the file and populate the url database in the URLShortnerService
+            if (File.Exists(path))
+            {
+                //if the file exists, read the lines of the file and create url models from the lines and add them to the url database in the URLShortnerService
+                string[] lines = File.ReadAllLines(path);
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split(',');
+                    //the line should be in the format of urlId,originalURL,shortenedURL,createdAt,clickCount
+                    if (parts.Length == 5)
+                    {
+                        int urlId = int.Parse(parts[0]);
+                        string originalURL = parts[1];
+                        string shortenedURL = parts[2];
+                        DateTime createdAt = DateTime.Parse(parts[3]);
+                        int clickCount = int.Parse(parts[4]);
+
+                        //create a url model from the line
+                        URLmodel urlModel = new URLmodel(originalURL, urlId, shortenedURL, createdAt, clickCount);
+
+                        //add the url model to the url database in the URLShortnerService
+                        urlShortnerService.AddURLModel(urlModel);
+
+                    }
+                }
+            }
+            else
+            {
+                //if the file does not exist, create a new file
+                File.Create(path).Close();
+            }
+
+        }
     }
 
     //this class is going to handle all the file reading and writing for the application, it will be used by the URLShortnerService to read and write the url database to a txt file called "urlDatabase.txt".

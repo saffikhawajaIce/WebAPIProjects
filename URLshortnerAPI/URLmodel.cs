@@ -11,11 +11,14 @@ public class URLmodel
 
     public DateTime CreatedAt { get; set; }
 
-    public URLmodel(string originalURL, int urlId, string shortenedURL, DateTime createdAt)
+    public int ClickCount { get; set; } = 0;
+
+    public URLmodel(string originalURL, int urlId, string shortenedURL, DateTime createdAt, int clickCount)
     {
         OriginalURL = originalURL;
         URLId = urlId;
         ShortenedURL = shortenedURL;
         CreatedAt = createdAt;
+        Clickcount = clickCount;
     }
 }
