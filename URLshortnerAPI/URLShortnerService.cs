@@ -45,8 +45,7 @@ public class URLShortnerService
         urlIdCounter++;
 
         //i want to update the file with the new url database every time a new url is added to the database
-        string content = string.Join(Environment.NewLine, urlDatabase.Select(kvp => $"{kvp.Value.URLId},{kvp.Value.OriginalURL},{kvp.Value.ShortenedURL},{kvp.Value.CreatedAt}"));
-        fileReaderService.WriteToFile(content);
+        fileReaderService.SavetoFile(urlDatabase);
 
         return urlModel;
     }
@@ -74,13 +73,13 @@ public class URLShortnerService
         }
 
         //this will update the file with the new url database every time a new url is added to the database
-        string content = string.Join(Environment.NewLine, urlDatabase.Select(kvp => $"{kvp.Value.URLId},{kvp.Value.OriginalURL},{kvp.Value.ShortenedURL},{kvp.Value.CreatedAt}"));
-        fileReaderService.WriteToFile(content);
+        fileReaderService.SavetoFile(urlDatabase);
 
         return new string(shortened);
     }
 
-    private int GetAnaltics(string shortenedURL)
+    //this method is going to return the stats of a shortened url, it will take the shortened url from the request body and return the stats of the url in the response
+    public int GetStats(string shortenedURL)
     {
         foreach (var entry in urlDatabase)
         {
@@ -91,4 +90,46 @@ public class URLShortnerService
         }
         return 0; // Return 0 if not found
     }
+
+    //this method is going to return a list of all the urls in the database
+    public List<URLmodel> GetAllURLs()
+    {
+        return urlDatabase.Values.ToList();
+    }
+
+    public bool DeleteURL(string shortenedURL)
+    {
+        //i want to check if the shortened url exists in the database, if it does not exist, i want to return a bad request response
+        var entry = urlDatabase.FirstOrDefault(kvp => kvp.Value.ShortenedURL == shortenedURL);
+
+        //if the shortened url exists in the database, i want to delete the url from the database and update the file with the new url database
+        if (entry.Key != 0)
+        {
+            urlDatabase.Remove(entry.Key);
+            fileReaderService.SavetoFile(urlDatabase);
+            return true;
+        }
+        return false;
+    }
+
+    public bool UpdateURL(string shortenedURL, string newOriginalURL)
+    {
+        //i want to check if the shortened url exists in the database, if it does not exist, i want to return a bad request response
+        var entry = urlDatabase.FirstOrDefault(kvp => kvp.Value.ShortenedURL == shortenedURL);
+
+        //i want to use the validator service to check if the new original url is valid, if it is not valid, i want to return a bad request response
+        if (!validator.IsValidURL(newOriginalURL))
+        {
+            throw new ArgumentException("The new original URL is not valid.");
+        }
+        else if (entry.Key != 0)
+        {
+            //if the shortened url exists in the database, i want to update the original url of the shortened url in the database and update the file with the new url database
+            entry.Value.OriginalURL = newOriginalURL;
+            fileReaderService.SavetoFile(urlDatabase);
+            return true;
+        }
+        return false;
+    }
+
 }

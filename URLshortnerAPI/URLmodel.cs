@@ -1,7 +1,6 @@
 
 namespace URLshortnerAPI;
 
-
 public class URLmodel
 {
     public string OriginalURL { get; set; }
@@ -19,6 +18,6 @@ public class URLmodel
         URLId = urlId;
         ShortenedURL = shortenedURL;
         CreatedAt = createdAt;
-        Clickcount = clickCount;
+        ClickCount = clickCount;
     }
 }

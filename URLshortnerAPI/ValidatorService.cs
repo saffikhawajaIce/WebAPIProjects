@@ -1,4 +1,6 @@
-public class Validator
+namespace URLshortnerAPI;
+
+public class ValidatorService
 {
     public bool IsValidURL(string url)
     {

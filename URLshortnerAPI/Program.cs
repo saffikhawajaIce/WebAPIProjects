@@ -24,6 +24,7 @@ builder.Services.AddSwaggerGen();
 //i need to add the file reader service and url shortner service to the dependency injection container
 builder.Services.AddSingleton<FileReaderService>();
 builder.Services.AddSingleton<URLShortnerService>();
+builder.Services.AddSingleton<ValidatorService>();
 
 var app = builder.Build();
 
@@ -52,9 +53,6 @@ app.MapDelete("/delete/{shortenedURL}", (FileReaderService fileReaderService, UR
 
 //this endpoint is going to handle the request to update the original url of a shortened url, it will take the shortened url and the new original url from the request body and update the original url in the database and return a success message in the response
 app.MapPut("/update/{shortenedURL}", (RequestDTO dto, FileReaderService fileReaderService, URLShortnerService urlShortnerService, string shortenedURL) => urlShortnerService.UpdateURL(shortenedURL, dto.OriginalURL));
-
-//this endpoint is going to handle the request to redirect to the original url from the shortened url, it will take the shortened url from the request body and redirect to the original url in the response
-app.MapGet("/{shortenedURL}", (FileReaderService fileReaderService, URLShortnerService urlShortnerService, string shortenedURL) => urlShortnerService.Redirect(shortenedURL));
 
 app.UseHttpsRedirection();
 

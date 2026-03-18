@@ -12,13 +12,9 @@ public class FileReaderService
     // it will be used by the ReadFile and WriteToFile methods to read and write the url database to a txt file called "urlDatabase.txt".
     private readonly string path = "urlDatabase.txt";
 
-    private readonly URLShortnerService urlShortnerService;
-
-    public FileReaderService(URLShortnerService urlShortnerService)
+    public FileReaderService()
     {
-        this.urlShortnerService = urlShortnerService;
         {
-
             //when the application starts, it will read the url database from the file and populate the url database in the URLShortnerService
             if (File.Exists(path))
             {
@@ -38,10 +34,7 @@ public class FileReaderService
 
                         //create a url model from the line
                         URLmodel urlModel = new URLmodel(originalURL, urlId, shortenedURL, createdAt, clickCount);
-
-                        //add the url model to the url database in the URLShortnerService
-                        urlShortnerService.AddURLModel(urlModel);
-
+                        SavetoFile(new Dictionary<int, URLmodel> { { urlId, urlModel } });
                     }
                 }
             }
@@ -77,6 +70,12 @@ public class FileReaderService
     public void WriteToFile(string content)
     {
         File.WriteAllText(path, content);
+    }
+
+    public void SavetoFile(Dictionary<int, URLmodel> urlDatabase)
+    {
+        string content = string.Join(Environment.NewLine, urlDatabase.Select(kvp => $"{kvp.Value.URLId},{kvp.Value.OriginalURL},{kvp.Value.ShortenedURL},{kvp.Value.CreatedAt},{kvp.Value.ClickCount}"));
+        WriteToFile(content);
     }
 
 }
