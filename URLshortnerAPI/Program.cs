@@ -54,8 +54,6 @@ app.MapDelete("/delete/{shortenedURL}", (FileReaderService fileReaderService, UR
 //this endpoint is going to handle the request to update the original url of a shortened url, it will take the shortened url and the new original url from the request body and update the original url in the database and return a success message in the response
 app.MapPut("/update/{shortenedURL}", (RequestDTO dto, FileReaderService fileReaderService, URLShortnerService urlShortnerService, string shortenedURL) => urlShortnerService.UpdateURL(shortenedURL, dto.OriginalURL));
 
-//i want to return a 404 not found error if the shortened url is not found in the database, i will handle this in the GetOriginalURL method in the URLShortnerService and return a 404 not found error if the shortened url is not found in the database
-
 
 app.UseHttpsRedirection();
 

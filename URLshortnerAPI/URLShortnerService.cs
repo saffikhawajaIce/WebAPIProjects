@@ -26,6 +26,7 @@ public class URLShortnerService
         //i want to use the validator service to check if the url is valid, if it is not valid, i want to return a bad request response
         if (!validator.IsValidURL(originalURL))
         {
+            //throw an exception that will be caught in the controller and return a 400 bad request error
             throw new ArgumentException("The URL is not valid.");
         }
 
