@@ -34,10 +34,21 @@ public class FileReaderService
 
                         //create a url model from the line
                         URLmodel urlModel = new URLmodel(originalURL, urlId, shortenedURL, createdAt, clickCount);
+
+                        //instead of overwriting the url database in the URLShortnerService, we will add the url model to the url database in the URLShortnerService
+                        URLShortnerService.urlDatabase.Add(urlId, urlModel);
+
+                        //after adding the url model to the url database in the URLShortnerService, we will save the url database to the file again to ensure that the file is updated with the new url model
                         SavetoFile(new Dictionary<int, URLmodel> { { urlId, urlModel } });
                     }
                 }
             }
+            //if the file is unable to be read, throw an exception
+            else if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("The file was not found.");
+            }
+
             else
             {
                 //if the file does not exist, create a new file

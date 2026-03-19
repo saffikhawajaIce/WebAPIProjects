@@ -58,8 +58,16 @@ public class URLShortnerService
             {
                 return entry.Value.OriginalURL;
             }
+            else if (entry.Value.ShortenedURL == shortenedURL)
+            {
+                //if the shortened url is found in the database, i want to increment the click count of the url and update the file with the new url database
+                entry.Value.ClickCount++;
+                fileReaderService.SavetoFile(urlDatabase);
+                return entry.Value.OriginalURL;
+            }
         }
-        return null; // Return null if not found
+        //if the shortened url is not found in the database, i want to return a 404 not found error
+        throw new KeyNotFoundException("The shortened URL was not found.");
     }
 
     private string GenerateShortenedURL(int urlId)
@@ -88,7 +96,8 @@ public class URLShortnerService
                 return entry.Value.ClickCount;
             }
         }
-        return 0; // Return 0 if not found
+        //if the shortened url is not found in the database, i want to return a 404 not found error
+        throw new KeyNotFoundException("The shortened URL was not found.");
     }
 
     //this method is going to return a list of all the urls in the database
@@ -109,7 +118,8 @@ public class URLShortnerService
             fileReaderService.SavetoFile(urlDatabase);
             return true;
         }
-        return false;
+        //if the shortened url is not found in the database, i want to return a 404 not found error
+        throw new KeyNotFoundException("The shortened URL was not found.");
     }
 
     public bool UpdateURL(string shortenedURL, string newOriginalURL)
@@ -129,7 +139,8 @@ public class URLShortnerService
             fileReaderService.SavetoFile(urlDatabase);
             return true;
         }
-        return false;
+        //if the shortened url is not found in the database, i want to return a 404 not found error
+        throw new KeyNotFoundException("The shortened URL was not found.");
     }
 
 }
