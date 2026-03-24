@@ -24,45 +24,48 @@ builder.Services.AddSingleton<StudentManagerService>();
 builder.Services.AddSingleton<StudentValidationService>();
 builder.Services.AddSingleton<DataManagerService>();
 builder.Services.AddSingleton<StudentMapperService>();
+builder.Services.AddAutoMapper(typeof(Program)); //register AutoMapper and scan for profiles in the current assembly
+
 
 var app = builder.Build();
 
 //define API endpoints
 
 //CRUD endpoints for student management
-//need to update the endpoints to use the data manager service to load and save students from the text file,
-//instead of using the in-memory list in the student manager service. 
 //This will ensure that the data is persisted across application restarts and that all operations are performed on the same data source, which is the text file.
 //The student manager service will still be responsible for managing the student data and performing validation, but it will now interact with the data manager service to read and write student records to the text file,
-// ensuring consistency and persistence of data.
+//ensuring consistency and persistence of data.
 
-app.MapGet("/student", (DataManagerService dataManagerService) => dataManagerService.LoadStudentsFromFile());
+app.MapGet("/student", (StudentManagerService studentManagerService) => studentManagerService.GetAllStudents());
 
-app.MapGet("/student/{id}", (DataManagerService dataManagerService, int id) =>
+app.MapGet("/student/{id}", (StudentManagerService studentManagerService, int id) =>
 {
-    var students = dataManagerService.LoadStudentsFromFile();
-    return students.FirstOrDefault(s => s.Id == id);
+    var student = studentManagerService.GetStudentById(id);
+    return student != null ? Results.Ok(student) : Results.NotFound();
 });
 
 //need to update this post endpoint to save the student to the text file instead of the in-memory list
-app.MapPost("/student", (DataManagerService dataManagerService, CreateStudentRequestDTO student) =>
+app.MapPost("/student", (StudentManagerService studentManagerService, CreateStudentRequestDTO student) =>
 {
-    var students = dataManagerService.LoadStudentsFromFile();
-    //i need to manually map the properties from the create student request DTO to a new student object, 
-    // then add the student object to the list of students in the data manager service, and finally save the students to the text file
-    //i need to make sure to generate an ID, generate a unique ID for each student, and set the enrollment date to the current date when creating a new student
-    int newId = students.Count > 0 ? students.Max(s => s.Id) + 1 : 1;
+    //this method will take a create student request DTO object and a new ID as input,
+    //and return a student object with the properties mapped from the create student request DTO object, 
+    //along with the new ID, the current date for enrollment date, and true for isEnrolled, using AutoMapper to perform the mapping based on the configured profiles.
+    //i need to use the MapToStudentResponseDTO method in the student mapper service to map the student object to a student response DTO object before returning it to the client,
+    //to ensure that the client receives the correct data format and structure in the response.
+
+    var students = studentManagerService.GetAllStudents();
+    int newId = students.Count() > 0 ? students.Max(s => s.Id) + 1 : 1;
     DateTime enrollmentDate = DateTime.Now;
     var studentMapperService = app.Services.GetRequiredService<StudentMapperService>();
     Student newStudent = studentMapperService.MapToStudent(student, newId);
-    students.Add(newStudent);
-    dataManagerService.SaveStudentsToFile();
+    studentManagerService.AddStudent(newStudent);
+    var studentResponseDTO = studentMapperService.MapToStudentResponseDTO(newStudent);
+    return Results.Ok(studentResponseDTO);
 });
 
-app.MapPut("/student", (DataManagerService dataManagerService, Student student) =>
+app.MapPut("/student", (StudentManagerService studentManagerService, Student student) =>
 {
-    var students = dataManagerService.LoadStudentsFromFile();
-    var existingStudent = students.FirstOrDefault(s => s.Id == student.Id);
+    var existingStudent = studentManagerService.GetStudentById(student.Id);
     if (existingStudent != null)
     {
         existingStudent.Name = student.Name;
@@ -71,18 +74,17 @@ app.MapPut("/student", (DataManagerService dataManagerService, Student student) 
         existingStudent.Department = student.Department;
         existingStudent.EnrollmentDate = student.EnrollmentDate;
         existingStudent.IsEnrolled = student.IsEnrolled;
-        dataManagerService.SaveStudentsToFile();
+        studentManagerService.UpdateStudent(existingStudent);
     }
 });
 
-app.MapDelete("/student/{id}", (DataManagerService dataManagerService, int id) =>
+app.MapDelete("/student/{id}", (StudentManagerService studentManagerService, int id) =>
 {
-    var students = dataManagerService.LoadStudentsFromFile();
+    var students = studentManagerService.GetAllStudents();
     var studentToRemove = students.FirstOrDefault(s => s.Id == id);
     if (studentToRemove != null)
     {
-        students.Remove(studentToRemove);
-        dataManagerService.SaveStudentsToFile();
+        studentManagerService.DeleteStudent(studentToRemove.Id);
     }
 });
 

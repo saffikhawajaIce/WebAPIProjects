@@ -15,6 +15,7 @@ public class StudentManagerService
     private StudentValidationService studentValidationService;
     private DataManagerService dataManagerService;
 
+
     //constructor
     public StudentManagerService(StudentValidationService studentValidationService, DataManagerService dataManagerService)
     {
@@ -30,7 +31,7 @@ public class StudentManagerService
         if (studentValidationService.ValidateStudent(student, out var errors))
         {
             _students.Add(student);
-            dataManagerService.SaveStudentsToFile();
+            dataManagerService.SaveStudentsToFile(_students);
         }
         else
         {
@@ -38,12 +39,35 @@ public class StudentManagerService
         }
     }
 
-    public IEnumerable<StudentResponseDTO> GetAllStudents()
+    public IEnumerable<StudentResponseDTO> GetAllStudentModels()
     {
-        //first try to load students from the text file, if the list is empty, then return the in-memory list
-        List<Student> _students = dataManagerService.LoadStudentsFromFile();
+        //
+        _students = dataManagerService.LoadStudentsFromFile();
+        foreach (Student student in _students)
+        {
+            StudentResponseDTO studentResponseDTO = new StudentResponseDTO
+            {
+                Id = student.Id,
+                Name = student.Name,
+                Email = student.Email,
+                Age = student.Age,
+                Department = student.Department,
+                EnrollmentDate = student.EnrollmentDate,
+                IsEnrolled = student.IsEnrolled
+            };
+            studentResponseDTOs.Add(studentResponseDTO);
+        }
+        return studentResponseDTOs;
+    }
 
-        //i need to use the studentresponseDTO to return the student data to the client, so i will create a new list of studentresponseDTO objects and map the properties from the student objects to the studentresponseDTO objects, then return the list of studentresponseDTO objects to the client
+    public List<StudentResponseDTO> GetAllStudents()
+    {
+        //i wanna make a fresh new local list in this method for the DTOs
+        studentResponseDTOs = new List<StudentResponseDTO>();
+        _students = dataManagerService.LoadStudentsFromFile();
+        //i need to use the studentresponseDTO to return the student data to the client,
+        //  so i will create a new list of studentresponseDTO objects and map the properties from the student objects to the studentresponseDTO objects, 
+        // then return the list of studentresponseDTO objects to the client
 
         foreach (Student student in _students)
         {
@@ -66,7 +90,7 @@ public class StudentManagerService
         }
         else if (_students.Count == 0)
         {
-            dataManagerService.SaveStudentsToFile();
+            dataManagerService.SaveStudentsToFile(_students);
         }
 
         return studentResponseDTOs;
@@ -90,7 +114,7 @@ public class StudentManagerService
                 existingStudent.Department = updatedStudent.Department;
                 existingStudent.EnrollmentDate = updatedStudent.EnrollmentDate;
                 existingStudent.IsEnrolled = updatedStudent.IsEnrolled;
-                dataManagerService.SaveStudentsToFile();
+                dataManagerService.SaveStudentsToFile(_students);
             }
             else
             {
@@ -105,7 +129,7 @@ public class StudentManagerService
         if (studentToRemove != null)
         {
             _students.Remove(studentToRemove);
-            dataManagerService.SaveStudentsToFile();
+            dataManagerService.SaveStudentsToFile(_students);
         }
     }
 }

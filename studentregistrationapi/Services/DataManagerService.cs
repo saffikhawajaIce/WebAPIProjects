@@ -39,13 +39,15 @@ public class DataManagerService
                 Age = int.Parse(parts[3]),
                 Department = parts[4]
             };
-            //i want this to return a list of students only
+            //i want this to return a list of students, so i will add the student object to the list of students in the data manager service,
+            // and then return the list of students to the client
+            students.Add(student);
         }
         return students;
     }
 
     //basic write method to save students to the text file
-    public void SaveStudentsToFile()
+    public void SaveStudentsToFile(List<Student> students)
     {
         //implementation to write the current list of students from studentManagerService._students to StudentList.txt
         List<string> lines = new List<string>();
