@@ -10,6 +10,13 @@ public class Student
     public DateTime EnrollmentDate { get; set; }
     public bool IsEnrolled { get; set; }
 
+
+    //default constructor for model binding and serialization
+    public Student()
+    {
+
+    }
+
     public Student(int id, string name, string email, int age, string department, DateTime enrollmentDate, bool isEnrolled)
     {
         Id = id;
