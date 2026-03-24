@@ -1,9 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace studentregistrationapi;
 
 public class StudentManagerService
 {
     //in-memory list to store students
     public List<Student> _students;
+
+    //list to hold student response DTOs for returning to the client
+    List<StudentResponseDTO> studentResponseDTOs = new List<StudentResponseDTO>();
     private StudentValidationService studentValidationService;
     private DataManagerService dataManagerService;
 
@@ -30,10 +38,27 @@ public class StudentManagerService
         }
     }
 
-    public IEnumerable<Student> GetAllStudents()
+    public IEnumerable<StudentResponseDTO> GetAllStudents()
     {
         //first try to load students from the text file, if the list is empty, then return the in-memory list
         List<Student> _students = dataManagerService.LoadStudentsFromFile();
+
+        //i need to use the studentresponseDTO to return the student data to the client, so i will create a new list of studentresponseDTO objects and map the properties from the student objects to the studentresponseDTO objects, then return the list of studentresponseDTO objects to the client
+
+        foreach (Student student in _students)
+        {
+            StudentResponseDTO studentResponseDTO = new StudentResponseDTO
+            {
+                Id = student.Id,
+                Name = student.Name,
+                Email = student.Email,
+                Age = student.Age,
+                Department = student.Department,
+                EnrollmentDate = student.EnrollmentDate,
+                IsEnrolled = student.IsEnrolled
+            };
+            studentResponseDTOs.Add(studentResponseDTO);
+        }
 
         if (_students == null)
         {
@@ -44,7 +69,7 @@ public class StudentManagerService
             dataManagerService.SaveStudentsToFile();
         }
 
-        return _students;
+        return studentResponseDTOs;
     }
 
     public Student GetStudentById(int id)
