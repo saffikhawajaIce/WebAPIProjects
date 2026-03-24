@@ -4,6 +4,9 @@ using Microsoft.Extensions.Hosting;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading.RateLimiting;
+using System.Threading.Tasks;
+
 
 using studentregistrationapi;
 
@@ -25,6 +28,25 @@ builder.Services.AddSingleton<StudentValidationService>();
 builder.Services.AddSingleton<DataManagerService>();
 builder.Services.AddSingleton<StudentMapperService>();
 builder.Services.AddAutoMapper(typeof(Program)); //register AutoMapper and scan for profiles in the current assembly
+//adding ratelimiting service here
+builder.Services.AddMemoryCache();
+
+builder.Services.AddRateLimiter(options =>
+{ //this will limit the number of requests from a single IP address to 5 requests per minute, with a queue limit of 0 additional requests that will be processed in order if the limit is exceeded. 
+  //This helps to prevent abuse and ensure fair usage of the API.
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+    });
+});
 
 
 var app = builder.Build();
@@ -107,6 +129,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseRateLimiter();
 
 app.UseAuthorization();
 
