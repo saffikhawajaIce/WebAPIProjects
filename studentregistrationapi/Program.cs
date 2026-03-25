@@ -41,9 +41,7 @@ builder.Services.AddRateLimiter(options =>
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 5,
-                Window = TimeSpan.FromMinutes(1),
-                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                QueueLimit = 0
+                Window = TimeSpan.FromMinutes(1)
             });
     });
 });
@@ -66,7 +64,9 @@ app.MapGet("/student/{id}", (StudentManagerService studentManagerService, int id
     return student != null ? Results.Ok(student) : Results.NotFound();
 });
 
-//need to update this post endpoint to save the student to the text file instead of the in-memory list
+
+//i need to update this post endpoint to require the ratelimiting service, and to use the student mapper service to map the incoming create student request DTO to a student object, and then map the student object to a student response DTO before returning it to the client.
+
 app.MapPost("/student", (StudentManagerService studentManagerService, CreateStudentRequestDTO student) =>
 {
     //this method will take a create student request DTO object and a new ID as input,
