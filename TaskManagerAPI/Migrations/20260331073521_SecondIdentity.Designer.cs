@@ -11,8 +11,8 @@ using TaskManagerAPI;
 namespace TaskManagerAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260330142933_InitialIdentity")]
-    partial class InitialIdentity
+    [Migration("20260331073521_SecondIdentity")]
+    partial class SecondIdentity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
