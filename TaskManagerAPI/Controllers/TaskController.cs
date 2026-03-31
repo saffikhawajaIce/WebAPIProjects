@@ -68,18 +68,6 @@ namespace TaskManagerAPI.Controllers
             return NoContent();
         }
 
-        [HttpPut("{taskId}/assign/{userId}")]
-        public async Task<IActionResult> AssignTaskToUser(int taskId, string userId)
-        {
-            var result = await _taskService.AssignTaskToUserAsync(taskId, userId);
-            if (!result)
-            {
-                return NotFound();
-            }
-
-            return NoContent();
-        }
-
         [HttpPut("{taskId}/complete")]
         public async Task<IActionResult> MarkTaskAsCompleted(int taskId)
         {
@@ -90,13 +78,6 @@ namespace TaskManagerAPI.Controllers
             }
 
             return NoContent();
-        }
-
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetTasksByUserId(string userId)
-        {
-            var tasks = await _taskService.GetTasksByUserIdAsync(userId);
-            return Ok(tasks);
         }
     }
 }

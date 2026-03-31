@@ -11,9 +11,7 @@ public interface ITaskService
     Task<TaskDTO?> GetTaskByIdAsync(int id);
     Task<TaskDTO?> UpdateTaskAsync(int id, UpdateTaskRequestDTO dto);
     Task<bool> DeleteTaskAsync(int id);
-    Task<bool> AssignTaskToUserAsync(int taskId, string userId);
     Task<bool> MarkTaskAsCompletedAsync(int taskId);
-    Task<IEnumerable<TaskDTO>> GetTasksByUserIdAsync(string userId);
 }
 
 public class TaskService : ITaskService
@@ -30,6 +28,12 @@ public class TaskService : ITaskService
         _context = context;
         _httpContextAccessor = httpContextAccessor;
     }
+
+
+    //i need to rewire the crud operations to the database and also add the user context to the task creation and retrieval operations so that users can only see their own tasks
+    //i also need to add the ability to assign tasks to other users and mark tasks as completed
+    //ill do this by using the token service to get the current user's ID from the token and then use that ID to filter tasks and assign tasks to users
+
 
     public async Task<TaskDTO> CreateTaskAsync(CreateTaskRequestDTO dto)
     {
@@ -66,8 +70,18 @@ public class TaskService : ITaskService
         // Retrieve all tasks from the database, ordered by due date and then by ID.
         // The tasks are mapped to TaskDTO objects before being returned.
 
+        var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            throw new InvalidOperationException("Authenticated user context is required to retrieve tasks.");
+        }
+
+        // Retrieve all tasks from the database, ordered by due date and then by ID.
+        // The tasks are mapped to TaskDTO objects before being returned.
+
         return await _context.Tasks
             .AsNoTracking()
+            .Where(task => task.UserId == currentUserId)
             .OrderBy(task => task.DueDate)
             .ThenBy(task => task.Id)
             .Select(task => MapToDto(task))
@@ -76,22 +90,34 @@ public class TaskService : ITaskService
 
     public async Task<TaskDTO?> GetTaskByIdAsync(int id)
     {
+        var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            throw new InvalidOperationException("Authenticated user context is required to retrieve a task.");
+        }
+
         // Retrieve a specific task by its ID from the database.
         // If the task is found, it is mapped to a TaskDTO and returned; otherwise, null is returned.
         var task = await _context.Tasks
             .AsNoTracking()
-            .FirstOrDefaultAsync(task => task.Id == id);
+            .FirstOrDefaultAsync(task => task.Id == id && task.UserId == currentUserId);
 
         return task is null ? null : MapToDto(task);
     }
 
     public async Task<TaskDTO?> UpdateTaskAsync(int id, UpdateTaskRequestDTO dto)
     {
+        var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            throw new InvalidOperationException("Authenticated user context is required to update a task.");
+        }
+
         // Retrieve a specific task by its ID from the database.
         // If the task is found, its properties are updated based on the provided UpdateTaskRequestDTO.
         // The updated task is then saved to the database and mapped to a TaskDTO before being returned.
 
-        var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == id);
+        var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == id && task.UserId == currentUserId);
         if (task is null)
         {
             return null;
@@ -108,10 +134,16 @@ public class TaskService : ITaskService
 
     public async Task<bool> DeleteTaskAsync(int id)
     {
+        var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            throw new InvalidOperationException("Authenticated user context is required to delete a task.");
+        }
+
         // Retrieve a specific task by its ID from the database. 
         // If the task is found, it is removed from the database and the changes are saved.
         // Finally, the method returns true if the task was successfully deleted; otherwise, it returns false.
-        var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == id);
+        var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == id && task.UserId == currentUserId);
         if (task is null)
         {
             return false;
@@ -123,38 +155,19 @@ public class TaskService : ITaskService
         return true;
     }
 
-    public async Task<bool> AssignTaskToUserAsync(int taskId, string userId)
-    {
-        // Retrieve a specific task by its ID from the database.
-        //  If the task is found, the method checks if a user with the specified userId exists in the database.
-        // If the user exists, the task's UserId property is updated to associate the task with the specified user, 
-        // and the changes are saved to the database. The method returns true if the task was successfully assigned to the user; 
-        // otherwise, it returns false.
-        var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == taskId);
-        if (task is null)
-        {
-            return false;
-        }
-
-        var userExists = await _context.Users.AnyAsync(user => user.Id == userId);
-        if (!userExists)
-        {
-            return false;
-        }
-
-        task.UserId = userId;
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
     public async Task<bool> MarkTaskAsCompletedAsync(int taskId)
     {
         // Retrieve a specific task by its ID from the database.
         //  If the task is found, its status is updated to TaskStatus.Completed, and the CompletedAt property is set to the current UTC time.
         //  The changes are then saved to the database.
         //  The method returns true if the task was successfully marked as completed; otherwise, it returns false.
-        var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == taskId);
+        var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            return false;
+        }
+
+        var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == taskId && task.UserId == currentUserId);
         if (task is null)
         {
             return false;
@@ -166,20 +179,6 @@ public class TaskService : ITaskService
         await _context.SaveChangesAsync();
 
         return true;
-    }
-
-    public async Task<IEnumerable<TaskDTO>> GetTasksByUserIdAsync(string userId)
-    {
-        // Retrieve all tasks associated with a specific user ID from the database.
-        //  The tasks are ordered by due date and then by ID, and they are mapped to TaskDTO objects before being returned.
-        //  This method allows clients to fetch all tasks for a specific user.
-        return await _context.Tasks
-            .AsNoTracking()
-            .Where(task => task.UserId == userId)
-            .OrderBy(task => task.DueDate)
-            .ThenBy(task => task.Id)
-            .Select(task => MapToDto(task))
-            .ToListAsync();
     }
 
     private static TaskDTO MapToDto(TaskModel task)
