@@ -32,10 +32,12 @@ namespace TaskManagerAPI.Controllers
         public async Task<IActionResult> GetTaskById(int id)
         {
             var task = await _taskService.GetTaskByIdAsync(id);
+
             if (task == null)
             {
                 return NotFound();
             }
+
             return Ok(task);
         }
 
@@ -50,10 +52,12 @@ namespace TaskManagerAPI.Controllers
         public async Task<IActionResult> UpdateTask(int id, UpdateTaskRequestDTO dto)
         {
             var updatedTask = await _taskService.UpdateTaskAsync(id, dto);
+
             if (updatedTask == null)
             {
                 return NotFound();
             }
+
             return Ok(updatedTask);
         }
 
@@ -61,10 +65,12 @@ namespace TaskManagerAPI.Controllers
         public async Task<IActionResult> DeleteTask(int id)
         {
             var result = await _taskService.DeleteTaskAsync(id);
+
             if (!result)
             {
                 return NotFound();
             }
+
             return NoContent();
         }
 
@@ -72,6 +78,7 @@ namespace TaskManagerAPI.Controllers
         public async Task<IActionResult> MarkTaskAsCompleted(int taskId)
         {
             var result = await _taskService.MarkTaskAsCompletedAsync(taskId);
+
             if (!result)
             {
                 return NotFound();

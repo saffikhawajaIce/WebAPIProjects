@@ -88,6 +88,9 @@ public class AuthController : ControllerBase
         return Ok(new { token });
     }
 
+    // The Logout method is an HTTP POST endpoint that allows authenticated users to log out of their accounts.
+    // It uses the SignInManager to sign out the user, effectively ending their authenticated session.
+    // After signing out, it returns a success message in the response.
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -95,17 +98,22 @@ public class AuthController : ControllerBase
         return Ok(new { message = "User logged out successfully" });
     }
 
+
+    // Get the current authenticated user's ID from the claims in the JWT token.
+    // The user ID is retrieved from the claims in the HTTP context.
     [HttpGet("current")]
     [Authorize]
     public async Task<IActionResult> GetCurrentUser()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         if (userId == null)
         {
             return Unauthorized(new { message = "User is not authenticated" });
         }
 
         var user = await _userManager.FindByIdAsync(userId);
+
         if (user == null)
         {
             return NotFound(new { message = "User not found" });

@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+// The TaskModel class represents a task entity in the application.
+// It includes properties such as Id, Title, Description, Status, CreatedAt, DueDate, CompletedAt, Priority, and UserId.
+// The class also defines an enumeration TaskStatus to represent the different states a task can be in.
 public class TaskModel
 {
     [Key]

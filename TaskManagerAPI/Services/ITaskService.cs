@@ -29,11 +29,9 @@ public class TaskService : ITaskService
         _httpContextAccessor = httpContextAccessor;
     }
 
-
     //i need to rewire the crud operations to the database and also add the user context to the task creation and retrieval operations so that users can only see their own tasks
     //i also need to add the ability to assign tasks to other users and mark tasks as completed
     //ill do this by using the token service to get the current user's ID from the token and then use that ID to filter tasks and assign tasks to users
-
 
     public async Task<TaskDTO> CreateTaskAsync(CreateTaskRequestDTO dto)
     {
@@ -143,6 +141,7 @@ public class TaskService : ITaskService
         // Retrieve a specific task by its ID from the database. 
         // If the task is found, it is removed from the database and the changes are saved.
         // Finally, the method returns true if the task was successfully deleted; otherwise, it returns false.
+
         var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == id && task.UserId == currentUserId);
         if (task is null)
         {
@@ -150,6 +149,7 @@ public class TaskService : ITaskService
         }
 
         _context.Tasks.Remove(task);
+
         await _context.SaveChangesAsync();
 
         return true;
@@ -161,6 +161,7 @@ public class TaskService : ITaskService
         //  If the task is found, its status is updated to TaskStatus.Completed, and the CompletedAt property is set to the current UTC time.
         //  The changes are then saved to the database.
         //  The method returns true if the task was successfully marked as completed; otherwise, it returns false.
+
         var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(currentUserId))
         {
@@ -168,6 +169,7 @@ public class TaskService : ITaskService
         }
 
         var task = await _context.Tasks.FirstOrDefaultAsync(task => task.Id == taskId && task.UserId == currentUserId);
+
         if (task is null)
         {
             return false;
