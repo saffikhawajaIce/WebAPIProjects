@@ -27,11 +27,15 @@ public class TokenService : ITokenService
         // Generate JWT token for the authenticated user.
         // The token includes claims such as the user's name, ID, and email, and is signed using a symmetric security key defined in the application's configuration.
 
+
+        //i also need to add issuer and audience claims to the token, so that it can be validated by the authentication middleware.
         var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Iss, _config["Jwt:Issuer"]),
+                new Claim(JwtRegisteredClaimNames.Aud, _config["Jwt:Audience"])
             };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));

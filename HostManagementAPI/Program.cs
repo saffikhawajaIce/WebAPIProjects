@@ -28,13 +28,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHostService, HostService>();
+builder.Services.AddScoped<ILoggerService, LoggerService>();
 builder.Services.AddScoped<IHostValidationService, HostValidationService>();
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Admin", policy => policy.RequireClaim("Admin"));
-});
+builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 
 // The services are registered in the dependency injection container, including the database context, authentication services, and controllers.
