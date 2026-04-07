@@ -13,17 +13,18 @@ public interface IHostService
     Task<HostDto> UpdateHostAsync(int id, UpdateHostDto request);
     Task<bool> DeleteHostAsync(int id);
     Task<bool> IsHostActiveAsync(int id);
+    Task<HostDto> ImportHostAsync(ImportHostDto request);
 }
 
 public class HostService : IHostService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IHostRepositoryService _repository;
     private readonly IHostValidationService _validationService;
     private readonly ILogger<HostService> _logger;
 
-    public HostService(ApplicationDbContext context, IHostValidationService validationService, ILogger<HostService> logger)
+    public HostService(IHostRepositoryService repository, IHostValidationService validationService, ILogger<HostService> logger)
     {
-        _context = context;
+        _repository = repository;
         _validationService = validationService;
         _logger = logger;
     }
@@ -32,9 +33,7 @@ public class HostService : IHostService
     {
         try
         {
-            var host = await _context.Hosts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(h => h.Id == id);
+            var host = await _repository.GetHostByIdAsync(id);
 
             if (host == null)
             {
@@ -55,11 +54,9 @@ public class HostService : IHostService
     {
         try
         {
-            var hosts = await _context.Hosts
-                .AsNoTracking()
-                .ToListAsync();
+            var hosts = await _repository.GetAllHostsAsync();
 
-            return hosts.ConvertAll(MapToDto);
+            return hosts.Select(MapToDto);
         }
         catch (Exception ex)
         {
@@ -77,9 +74,7 @@ public class HostService : IHostService
             ValidateRequest(request.Name, request.IpAddress, request.Port);
 
             //i also then want to validate weather an existing host with the same ip address and port already exists, and if so, i want to throw an exception with a meaningful message that can be returned to the client.
-            var existingHost = await _context.Hosts
-                .AsNoTracking()
-                .FirstOrDefaultAsync(h => h.IpAddress == request.IpAddress && h.Port == request.Port);
+            var existingHost = await _repository.GetHostByIpAndPortAsync(request.IpAddress, request.Port);
 
             if (existingHost != null)
             {
@@ -109,13 +104,12 @@ public class HostService : IHostService
             };
 
             //i want to add the new host to the database, and then return the created host as a dto.
-            _context.Hosts.Add(host);
-            await _context.SaveChangesAsync();
+            var createdHost = await _repository.AddHostAsync(host);
 
-            _logger.LogInformation($"Host with id {host.Id} has been created.");
+            _logger.LogInformation($"Host with id {createdHost.Id} has been created.");
 
             //i want to return the created host as a dto.
-            return MapToDto(host);
+            return MapToDto(createdHost);
         }
         catch (ArgumentException ex)
         {
@@ -134,7 +128,7 @@ public class HostService : IHostService
     {
         try
         {
-            var host = await _context.Hosts.FirstOrDefaultAsync(h => h.Id == id);
+            var host = await _repository.GetHostByIdAsync(id);
 
             //i want to check if the request is valid before trying to update the host, and if not, i want to throw an exception with a meaningful message that can be returned to the client.
             ValidateRequest(request.Name, request.IpAddress, request.Port);
@@ -148,13 +142,11 @@ public class HostService : IHostService
             //i also then want to validate weather an existing host with the same ip address and port already exists,
             //  and if so, i want to throw an exception with a meaningful message that can be returned to the client.
 
-            else if (!string.IsNullOrEmpty(request.IpAddress) && request.Port.HasValue)
+            else if (!string.IsNullOrEmpty(request.IpAddress) && request.Port == host.Port)
             {
-                var existingHost = await _context.Hosts
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(h => h.Id != id && h.IpAddress == request.IpAddress && h.Port == request.Port);
+                var existingHost = await _repository.GetHostByIpAndPortAsync(request.IpAddress, request.Port);
 
-                if (existingHost != null)
+                if (existingHost != null && existingHost.Id != id)
                 {
                     _logger.LogError($"Host with ip address {request.IpAddress} and port {request.Port} already exists.");
                     throw new ArgumentException($"Host with ip address {request.IpAddress} and port {request.Port} already exists.");
@@ -170,12 +162,12 @@ public class HostService : IHostService
             host.LastSeenAt = DateTime.UtcNow;
 
             //i want to update the host in the database, and then return the updated host as a dto.
-            await _context.SaveChangesAsync();
+            var updatedHost = await _repository.UpdateHostAsync(host);
 
             //i want to log the update with the host id, and then return the updated host as a dto.
             _logger.LogInformation($"Host with id {id} has been updated.");
 
-            return MapToDto(host);
+            return MapToDto(updatedHost);
         }
         catch (ArgumentException ex)
         {
@@ -193,7 +185,7 @@ public class HostService : IHostService
     {
         try
         {
-            var host = await _context.Hosts.FirstOrDefaultAsync(h => h.Id == id);
+            var host = await _repository.GetHostByIdAsync(id);
 
             if (host == null)
             {
@@ -204,7 +196,7 @@ public class HostService : IHostService
             host.IsActive = false;
             host.Status = "offline";
 
-            await _context.SaveChangesAsync();
+            var updatedHost = await _repository.UpdateHostAsync(host);
 
             _logger.LogInformation($"Host with id {id} has been marked as inactive.");
 
@@ -221,7 +213,7 @@ public class HostService : IHostService
     {
         try
         {
-            var host = await _context.Hosts.FirstOrDefaultAsync(h => h.Id == id);
+            var host = await _repository.GetHostByIdAsync(id);
 
             if (host == null)
             {
@@ -251,6 +243,59 @@ public class HostService : IHostService
         else if (!_validationService.IsValidPort(port))
         {
             throw new ArgumentException("Invalid port number.");
+        }
+    }
+
+    public async Task<HostDto> ImportHostAsync(ImportHostDto request)
+    {
+        try
+        {
+            //i want to check if the request is valid before trying to import the host, and if not, i want to throw an exception with a meaningful message that can be returned to the client.
+            ValidateRequest(request.Name, request.IpAddress, request.Port);
+
+            //i also then want to validate weather an existing host with the same ip address and port already exists, and if so, i want to throw an exception with a meaningful message that can be returned to the client.
+            var existingHost = await _repository.GetHostByIpAndPortAsync(request.IpAddress, request.Port);
+
+            if (existingHost != null)
+            {
+                _logger.LogError($"Host with ip address {request.IpAddress} and port {request.Port} already exists.");
+                throw new ArgumentException($"Host with ip address {request.IpAddress} and port {request.Port} already exists.");
+            }
+
+            var now = DateTime.UtcNow;
+            var host = new Host
+            {
+                Hostname = string.IsNullOrEmpty(request.Name) ? $"{request.IpAddress}:{request.Port}" : request.Name,
+                IpAddress = request.IpAddress,
+                Port = request.Port,
+                IsActive = true,
+                Status = "online",
+                CreatedAt = now,
+                UpdatedAt = now,
+                LastSeenAt = now,
+                Environment = string.Empty,
+                OperatingSystem = string.Empty,
+                Owner = string.Empty,
+                Description = string.Empty,
+                Tags = string.Empty,
+                Notes = string.Empty
+            };
+
+            var createdHost = await _repository.AddHostAsync(host);
+
+            _logger.LogInformation($"Host with id {createdHost.Id} has been imported.");
+
+            return MapToDto(createdHost);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "An error occurred while trying to import host.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while trying to import host.");
+            throw;
         }
     }
 

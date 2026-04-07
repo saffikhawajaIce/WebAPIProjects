@@ -49,3 +49,11 @@ public class UpdateHostDto
     public int Port { get; set; }
     public bool IsActive { get; set; }
 }
+
+public class ImportHostDto
+{
+    public string Name { get; set; }
+    public string IpAddress { get; set; }
+    public int Port { get; set; }
+    public string Owner { get; set; }
+}
