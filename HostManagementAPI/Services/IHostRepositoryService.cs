@@ -32,6 +32,7 @@ public interface IHostRepositoryService
     Task<Host> AddHostAsync(Host host);
     Task<Host> UpdateHostAsync(Host host);
     Task DeleteHostAsync(int id);
+    Task<Host> ExistsByIpAndPortAsync(string ip, int port);
 }
 
 public class HostRepositoryService : IHostRepositoryService
@@ -41,12 +42,12 @@ public class HostRepositoryService : IHostRepositoryService
 
     public Task<IEnumerable<Host>> GetAllHostsAsync()
     {
-        return Task.FromResult(_hosts.AsEnumerable());
+        return Task.FromResult(_hosts.Where(h => !h.IsDeleted).AsEnumerable());
     }
 
     public Task<Host> GetHostByIdAsync(int id)
     {
-        var host = _hosts.FirstOrDefault(h => h.Id == id);
+        var host = _hosts.FirstOrDefault(h => h.Id == id && !h.IsDeleted);
         if (host == null)
         {
             throw new KeyNotFoundException($"Host with ID {id} not found.");
@@ -56,7 +57,7 @@ public class HostRepositoryService : IHostRepositoryService
 
     public Task<Host> GetHostByIpAndPortAsync(string ip, int port)
     {
-        var host = _hosts.FirstOrDefault(h => h.IpAddress == ip && h.Port == port);
+        var host = _hosts.FirstOrDefault(h => h.IpAddress == ip && h.Port == port && !h.IsDeleted);
         if (host == null)
         {
             throw new KeyNotFoundException($"Host with IP {ip} and Port {port} not found.");
@@ -73,7 +74,7 @@ public class HostRepositoryService : IHostRepositoryService
 
     public Task<Host> UpdateHostAsync(Host host)
     {
-        var existingHost = _hosts.FirstOrDefault(h => h.Id == host.Id);
+        var existingHost = _hosts.FirstOrDefault(h => h.Id == host.Id && !h.IsDeleted);
         if (existingHost == null)
         {
             throw new KeyNotFoundException($"Host with ID {host.Id} not found.");
@@ -85,14 +86,21 @@ public class HostRepositoryService : IHostRepositoryService
         return Task.FromResult(existingHost);
     }
 
+    //i want to refactor this to instead implement a soft delete instead of a hard delete, so instead of removing the host from the list, i want to set a property called IsDeleted to true, and then filter out the deleted hosts in the GetAllHostsAsync method.
     public Task DeleteHostAsync(int id)
     {
-        var host = _hosts.FirstOrDefault(h => h.Id == id);
+        var host = _hosts.FirstOrDefault(h => h.Id == id && !h.IsDeleted);
         if (host == null)
         {
             throw new KeyNotFoundException($"Host with ID {id} not found.");
         }
-        _hosts.Remove(host);
+        host.IsDeleted = true;
         return Task.CompletedTask;
+    }
+
+    public Task<Host> ExistsByIpAndPortAsync(string ip, int port)
+    {
+        var host = _hosts.FirstOrDefault(h => h.IpAddress == ip && h.Port == port && !h.IsDeleted);
+        return Task.FromResult(host);
     }
 }

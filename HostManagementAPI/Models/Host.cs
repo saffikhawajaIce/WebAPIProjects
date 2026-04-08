@@ -13,6 +13,7 @@ public class Host
     public string Description { get; set; }
     public string Tags { get; set; }
     public bool IsActive { get; set; }
+    public bool IsDeleted { get; set; }
     public DateTime LastSeenAt { get; set; }
     public string Notes { get; set; }
     public Host() { }

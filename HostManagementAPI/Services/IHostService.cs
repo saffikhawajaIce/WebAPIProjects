@@ -144,7 +144,8 @@ public class HostService : IHostService
 
             else if (!string.IsNullOrEmpty(request.IpAddress) && request.Port == host.Port)
             {
-                var existingHost = await _repository.GetHostByIpAndPortAsync(request.IpAddress, request.Port);
+                //i want to check if the ip address and port of the host being updated is the same as the ip address and port of the host being updated.
+                var existingHost = await _repository.ExistsByIpAndPortAsync(request.IpAddress, request.Port);
 
                 if (existingHost != null && existingHost.Id != id)
                 {
@@ -152,6 +153,22 @@ public class HostService : IHostService
                     throw new ArgumentException($"Host with ip address {request.IpAddress} and port {request.Port} already exists.");
                 }
             }
+
+            else if (!string.IsNullOrEmpty(request.IpAddress) && request.Port != host.Port)
+            {
+                //i want to check if the ip address and port of the host being updated is the same as the ip address and port of the host being updated.
+                var existingHost = await _repository.ExistsByIpAndPortAsync(request.IpAddress, request.Port);
+            }
+
+            if (existingHost != null && existingHost.Id != id)
+            {
+                _logger.LogError($"Host with ip address {request.IpAddress} and port {request.Port} already exists.");
+                throw new ArgumentException($"Host with ip address {request.IpAddress} and port {request.Port} already exists.");
+            }
+
+            // i want to update the host in the database, and then return the updated host as a dto.
+            // i want to update the hostname, ip address, port, is active, status, updated at,
+            // and last seen at properties of the host with the values provided in the request.
 
             host.Hostname = request.Name;
             host.IpAddress = request.IpAddress;
@@ -254,7 +271,7 @@ public class HostService : IHostService
             ValidateRequest(request.Name, request.IpAddress, request.Port);
 
             //i also then want to validate weather an existing host with the same ip address and port already exists, and if so, i want to throw an exception with a meaningful message that can be returned to the client.
-            var existingHost = await _repository.GetHostByIpAndPortAsync(request.IpAddress, request.Port);
+            var existingHost = await _repository.ExistsByIpAndPortAsync(request.IpAddress, request.Port);
 
             if (existingHost != null)
             {
